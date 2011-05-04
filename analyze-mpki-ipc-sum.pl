@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-ipc-sum - analyze the differences in cache partitionings, 
-#                        optimized for MPKI sum or IPC sum
-#                        based MPKIs and accurate CPIs 
+# analyze-mpki-ipc-sum - analyze the differences in cache partitionings 
+#                        when optimized for MPKI sum or IPC sum,
+#                        based on MPKIs and accurate CPIs 
 #                        for 2-benchmark workloads. 
 # Purpose:
 #       To show how divergent MPKI based cache partitioning can be from
@@ -17,6 +17,7 @@
 #
 use List::Util qw(sum);
 use Common;
+
 #
 # MPKIs - MPKIs for each program
 # 
@@ -31,7 +32,7 @@ my @MPKIs = (
 #
 # CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
 #		 Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
@@ -88,9 +89,9 @@ print "\n\nbegin to calculate all possible combinations".
 		" for 2-benchmark workloads...\n";
 my @keys = (keys %programs);
 my $key_num = scalar(@keys);
-my $program1 = 0, $program2 = 0;
-my $same_result = 0, $diff_result = 0;
-my $length = 0, $speedup_diff = 0, $mpki_diff = 0, $ipc_diff = 0;
+my ($program1, $program2) = (0, 0);
+my ($same_result, $diff_result) = (0,0);
+my ($length, $speedup_diff, $mpki_diff, $ipc_diff) = (0,0,0,0);
 my $output_str = 0;
 for ($program1 = 0; $program1 < $key_num-1; $program1++){
 	for($program2 = $program1+1; $program2 <= $key_num -1 ; $program2++){
@@ -128,11 +129,11 @@ for ($program1 = 0; $program1 < $key_num-1; $program1++){
 
 		my $workload = "$keys[$program1]+$keys[$program2]";
 		# mpki diverge
-		$mpki_diff = abs($mpki_total1-$mpki_total2);
+		$mpki_diff = $mpki_total2 - $mpki_total1;
 		$absolute_mpki_diverge{$workload} = $mpki_diff;
 		$relative_mpki_diverge{$workload} = $mpki_diff*100/$mpki_total2; 
 		# ipc diverge
-		$ipc_diff = abs($ipc_total1-$ipc_sum);
+		$ipc_diff = $ipc_sum - $ipc_total1;
 		$absolute_ipc_diverge{$workload} = $ipc_diff;
 		$relative_ipc_diverge{$workload} = $ipc_diff*100/$ipc_sum;
 		# speedup diverge
@@ -153,24 +154,22 @@ my @absolute_speedup = (values %absolute_speedup_diverge);
 print_avg("absolute speedup", \@absolute_speedup, $total);
 
 my @relative_speedup = (values %relative_speedup_diverge);
-print_avg("relative speedup", \@relative_speedup, $total);
+print_avg("drop in relative speedup", \@relative_speedup, $total);
 
 my @absolute_mpki = (values %absolute_mpki_diverge);
 print_avg("absolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %relative_mpki_diverge);
-print_avg("relative mpki", \@relative_mpki, $total);
+print_avg("drop in relative mpki", \@relative_mpki, $total);
 
 my @absolute_ipc = (reverse sort values %absolute_ipc_diverge);
 print_avg("absolute ipc sum", \@absolute_ipc, $total);
 
 my @relative_ipc = (reverse sort values %relative_ipc_diverge);
-print_avg("relative ipc sum", \@relative_ipc, $total);
+print_avg("drop in relative ipc sum", \@relative_ipc, $total);
 
 print_top(\%relative_speedup_diverge, "relative speedup", 10,10,8,6,4,2);
 
 print_top(\%relative_mpki_diverge, "relative mpki", 10,	50,40,30,20,10,5);
-
-print_top(\%absolute_ipc_diverge, "absolute ipc sum",10);
 
 print_top(\%relative_ipc_diverge, "relative ipc sum", 10, 20,15,10,5);
