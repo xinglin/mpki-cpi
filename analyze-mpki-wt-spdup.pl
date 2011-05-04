@@ -2,7 +2,7 @@
 #
 # analyze-mpki-wt-spdup - analyze the differences in cache partitionings 
 #						  when optimized for MPKI sum or weighted speedup,
-#						  based MPKIs and accurate CPIs 
+#						  based on MPKIs or accurate CPIs 
 #						  for 2-benchmark workloads. 
 # Purpose:
 #		To show how divergent MPKI based cache partitioning can be from
@@ -31,8 +31,9 @@ my @MPKIs = (
 #
 # CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
 #		 Make sure this equation holds: $CPIs = $programs + 1.
+#
 my @CPIs = (
 	[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],#20
 	[],[],[],[],
@@ -78,6 +79,8 @@ read_all_mpki_cpi();
 %absolute_mpki_diverge = ();
 %absolute_ipc_diverge  = ();
 %absolute_speedup = ();		#weighted speedup
+
+# cache partitioning optimized for weighted speedup is used as baseline.
 %relative_mpki_diverge = ();
 %relative_ipc_diverge  = ();
 %relative_speedup = ();
@@ -168,10 +171,10 @@ print_avg("absolute mpki", \@absolute_mpki, $total);
 my @relative_mpki = (values %relative_mpki_diverge);
 print_avg("relative mpki", \@relative_mpki, $total);
 
-my @absolute_ipc = (reverse sort values %absolute_ipc_diverge);
+my @absolute_ipc = (values %absolute_ipc_diverge);
 print_avg("absolute ipc sum", \@absolute_ipc, $total);
 
-my @relative_ipc = (reverse sort values %relative_ipc_diverge);
+my @relative_ipc = (values %relative_ipc_diverge);
 print_avg("relative ipc sum", \@relative_ipc, $total);
 
 print_top(\%absolute_speedup, "absolute speedup", 10);
