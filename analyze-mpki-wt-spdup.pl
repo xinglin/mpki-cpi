@@ -163,19 +163,19 @@ my @weighted_speedup = (values %absolute_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %relative_speedup);
-print_avg("relative speedup", \@weighted_speedup, $total);
+print_avg("drop in relative speedup", \@weighted_speedup, $total);
 
 my @absolute_mpki = (values %absolute_mpki_diverge);
 print_avg("absolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %relative_mpki_diverge);
-print_avg("relative mpki", \@relative_mpki, $total);
+print_avg("drop in relative mpki", \@relative_mpki, $total);
 
 my @absolute_ipc = (values %absolute_ipc_diverge);
 print_avg("absolute ipc sum", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %relative_ipc_diverge);
-print_avg("relative ipc sum", \@relative_ipc, $total);
+print_avg("drop in relative ipc sum", \@relative_ipc, $total);
 
 print_top(\%absolute_speedup, "absolute speedup", 10);
 
