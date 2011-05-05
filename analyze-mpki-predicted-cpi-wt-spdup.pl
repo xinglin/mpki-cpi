@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w
 #
 # analyze-mpki-predicted-cpi-wt-spdup - analyze the differences in cache 
-#							   		   partitioning based on MPKI and 
-#									   optimal predicted CPIs for 2-benchmark 
-#									   workloads.
+#							   		    partitioning when optimized for MPKI
+#										and weighted speedup, based on MPKI and 
+#									    optimal predicted CPIs for 2-benchmark 
+#									    workloads.
 # Purpose:
 #       To show the best speedup we can get based on *optimal predicted* CPIs,
 #		when compared with MPKI based cache partitioning.
@@ -11,13 +12,15 @@
 # Cache partitioning decision metrics:
 #		minimum MPKI sum for cache partitioning based on MPKI; 
 #       maximum weighted speedup for cache partitioning based on optimal 
-#		predicted CPIs and accurate CPIs.
+#		predicted CPIs.
 # 
 # Performance metrics:
-#       speedup in weighted speedup, MPKI sum and IPC sum                  
+#       speedup in weighted speedup, MPKI sum and IPC sum.
+#		cache partitioning based on MPKI is used as the baseline.          
 #
 use List::Util qw(sum);
 use Common;
+
 #
 # MPKIs - MPKIs for each program
 # 
@@ -116,13 +119,13 @@ read_all_predicted_cpis();
 %best_pred_r_speedup = ();
 
 # calculate all possible combinations
-print "\n\nbegin to calculate all possible combinations...\n";
+print "\n\nbegin to calculate all possible 2-benchmark combinations...\n";
 my @keys = (keys %programs);
 my $key_num = scalar(@keys);
 my ($pg1, $pg2) = (0,0); 
 my ($length, $workload) = (0,0);
 my $output_str = 0;
-my $i=0, $j=0, $k=0, $l=0;
+my ($i, $j, $k, $l) = (0,0,0,0);
 my ($same_result, $diff_result) = (0, 0);
 for ($pg1 = 0; $pg1 < $key_num-1; $pg1++){
 	for($pg2 = $pg1+1; $pg2 <= $key_num -1 ; $pg2++){
@@ -149,8 +152,8 @@ for ($pg1 = 0; $pg1 < $key_num-1; $pg1++){
 			  for($l = $k+1; $l <= $length -1; $l ++){
 
 		# the $pred_speedup gotten here is based on predicted ipc. The value
-		# is meanless to us. We want to get real-world speedup based on 
-		# predicted CPIs.
+		# is meanless to us. We want to get the real-world speedup of 
+		# cache partitioning based on predicted CPIs.
 		($pred_ii, $pred_speedup) = 
 			max_speedup($predicted_CPIs[$programs{$keys[$pg1]}][$i][$j], 
 					$predicted_CPIs[$programs{$keys[$pg2]}][$k][$l]);
@@ -192,28 +195,27 @@ for ($pg1 = 0; $pg1 < $key_num-1; $pg1++){
 			1/$CPIs[$programs{$keys[$pg1]}][$pred_best_ii]
 		  + 1/$CPIs[$programs{$keys[$pg2]}][$length-$pred_best_ii - 2];
 
-		$mpki_diff = $mpki_predicted-$mpki;
+		$mpki_diff = $mpki_predicted - $mpki;
 		$best_pred_a_mpki_diverge{$workload} = $mpki_diff;
-		$relative_mpki_diff = $mpki_diff*100/$mpki;
-		$best_pred_r_mpki_diverge{$workload} = $relative_mpki_diff;
+		$best_pred_r_mpki_diverge{$workload} = $mpki_diff*100/$mpki;
 	
-		$ipc_diff = $ipc_predicted-$ipc;
+		$ipc_diff = $ipc_predicted - $ipc;
 		$best_pred_a_ipc_diverge{$workload} = $ipc_diff;
-		$relative_ipc_diff = $ipc_diff*100/$ipc;
-		$best_pred_r_ipc_diverge{$workload} = $relative_ipc_diff;
+		$best_pred_r_ipc_diverge{$workload} = $ipc_diff*100/$ipc;
 	}
 }
 
 my $total = $same_result + $diff_result;
 printf "Total: $total, diff results: $diff_result\n percentage: %0.2f%%\n",
-		$diff_result/$total;
+		$diff_result*100/$total;
 
 print "Divergent details:\n";
 my @weighted_speedup = (values %best_pred_a_speedup);
 print_avg("[Prediction] absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("[Prediction] Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[Prediction] Increase in relative speedup", \@weighted_speedup, 
+																	$total);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
 print_avg("[Prediction] absolute mpki", \@absolute_mpki, $total);
