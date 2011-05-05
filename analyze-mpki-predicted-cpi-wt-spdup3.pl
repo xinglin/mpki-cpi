@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w
 #
 # analyze-mpki-predicted-cpi-wt-spdup3 - analyze the differences in cache 
-#                                       partitioning based MPKI and 
-#                                       optimal predicted CPIs for 3-benchmark 
-#                                       workloads.
+#                                        partitioning when optimized for MPKI
+#										 or weighted speedup, based on MPKI or 
+#                                        optimal predicted CPIs for 3-benchmark 
+#                                        workloads.
 # Purpose:
 #       To show the best speedup we can get based on *optimal predicted* CPIs,
 #       when compared with MPKI based cache partitioning.
@@ -18,20 +19,23 @@
 #
 use List::Util qw(sum max);
 use Common;
+
 #
 # MPKIs - MPKIs for each program
 # 
 # FIXME: remember to add an array here whenever a new program is added. 
-#        $MPKIs = $programs + 1.
+#        Make sure this equation holds: $MPKIs = $programs + 1.
+#
 my @MPKIs = (
 	[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],#20
 	[],[],[],[],
 );
 
 #
-# CPIs - CPI for each program
+# CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
+#        Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
 	[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],#20
@@ -39,7 +43,7 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPI for each program
+# CPIs - predicted CPIs for each program
 # 
 my @predicted_CPIs = ();
 
@@ -108,9 +112,9 @@ read_all_predicted_cpis();
 # statistics we are interested to get
 %best_pred_a_mpki_diverge = ();
 %best_pred_a_ipc_diverge  = ();
+%best_pred_a_speedup = ();
 %best_pred_r_mpki_diverge = ();
 %best_pred_r_ipc_diverge  = ();
-%best_pred_a_speedup = ();
 %best_pred_r_speedup = ();
 
 # calculate all possible combinations
@@ -124,7 +128,7 @@ my ($i, $j, $k, $l, $m, $n) = (0,0,0,0,0,0);
 my ($same_result, $diff_result) = (0,0);
 for ($pg1 = 0; $pg1 <= $key_num-3; $pg1++){
 	for($pg2 = $pg1+1; $pg2 <= $key_num - 2; $pg2++){
-LABEL:	for($pg3 = $pg2+1; $pg3 <= $key_num -1 ; $pg3++){
+		for($pg3 = $pg2+1; $pg3 <= $key_num -1 ; $pg3++){
 		
 		$length = scalar(@{ $CPIs[$programs{$keys[$pg1]}] });
 		my $workload = "$keys[$pg1]+$keys[$pg2]+$keys[$pg3]";
@@ -165,29 +169,7 @@ LABEL:	for($pg3 = $pg2+1; $pg3 <= $key_num -1 ; $pg3++){
 						$predicted_CPIs[$programs{$keys[$pg2]}][$k][$l],
 						$predicted_CPIs[$programs{$keys[$pg3]}][$m][$n]);
 
-		# if the following conditions are true, we have found the best 
-		# cache partitioning, no need to investigate other way-predictions.
-		if($pred_ii == $cpi_ii && $pred_jj == $cpi_jj){
-			my $pred_mpki = $MPKIs[$programs{$keys[$pg1]}][$pred_ii] + 
-					$MPKIs[$programs{$keys[$pg2]}][$pred_jj] +
-				$MPKIs[$programs{$keys[$pg3]}][$length-$pred_ii-$pred_jj-3];
-			my $pred_ipc = 1/$CPIs[$programs{$keys[$pg1]}][$pred_ii] + 
-				  1/$CPIs[$programs{$keys[$pg2]}][$pred_jj] + 
-				1/$CPIs[$programs{$keys[$pg3]}][$length-$pred_ii-$pred_jj-3];
-			
-			my $pred_speedup_diff = $cpi_speedup - $speedup;
-			$best_pred_a_speedup{$workload} = $pred_speedup_diff;
-			$best_pred_r_speedup{$workload} = $pred_speedup_diff*100/$speedup;
-			my $pred_mpki_diff = $mpki - $pred_mpki;
-			$best_pred_a_mpki_diverge{$workload} = $pred_mpki_diff;
-			$best_pred_r_mpki_diverge{$workload} = $pred_mpki_diff*100/$mpki;
-			my $pred_ipc_diff = $pred_ipc - $ipc;
-			$best_pred_a_ipc_diverge{$workload} = $pred_ipc_diff;
-			$best_pred_r_ipc_diverge{$workload} = $pred_ipc_diff*100/$ipc;	
-
-			next LABEL;	
-		}
-		# get real-world speedup based on pred_i and accurate cpis
+		# get the real-world speedup based on pred_i and accurate cpis
 		$pred_speedup = 
             ($CPIs[$programs{$keys[$pg1]}][$length-1]/
             $CPIs[$programs{$keys[$pg1]}][$pred_ii])
@@ -195,6 +177,15 @@ LABEL:	for($pg3 = $pg2+1; $pg3 <= $key_num -1 ; $pg3++){
             $CPIs[$programs{$keys[$pg2]}][$pred_jj])
           + ($CPIs[$programs{$keys[$pg3]}][$length-1]/
             $CPIs[$programs{$keys[$pg3]}][$length-$pred_ii -$pred_jj - 3]);
+
+		# when we have found the best 
+		# cache partitioning, no need to try other way-predictions.
+		if($pred_speedup == $cpi_speedup){
+			$pred_best_ii = $pred_ii;
+			$pred_best_jj = $pred_jj;
+			$pred_best_speedup = $pred_speedup;
+			goto RECORD;
+		}
 
 		# if this combination results in higher speedup, record it.
 		if($pred_best_speedup < $pred_speedup){
@@ -208,7 +199,7 @@ LABEL:	for($pg3 = $pg2+1; $pg3 <= $key_num -1 ; $pg3++){
 			}#k
 		  }#j
 		}#i	
-		
+RECORD:	
 		# if cache partitioning based on optimal predicted CPI is same
 		# as MPKI based cache partitioning, continue.
 		if($pred_best_ii == $best_ii && $pred_best_jj == $best_jj){
@@ -269,12 +260,7 @@ print_avg("[Pred] absolute ipc", \@absolute_ipc, $total);
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
 print_avg("[Pred] Increased relative ipc", \@relative_ipc, $total);
 
-print_top(\%best_pred_a_speedup, "[Pred] absolute speedup", 10);
-
-print_top(\%best_pred_r_speedup, "[Pred] relative speedup",10, 10,8,6,4,2);
-
-print_top(\%best_pred_r_mpki_diverge, "[Pred]relative mpki", 10,50,40,30,20,10,5);
-
-print_top(\%best_pred_a_ipc_diverge, "[Pred] absolute ipc",10);
-
-print_top(\%best_pred_r_ipc_diverge, "[Pred] relative ipc", 10,20,15,10,5);
+print_top(\%best_pred_r_speedup, "relative speedup",10, 10,8,6,4,2);
+print_top(\%best_pred_r_mpki_diverge, "relative mpki", 10,50,40,30,20,10,5);
+print_top(\%best_pred_a_ipc_diverge, "absolute ipc",10);
+print_top(\%best_pred_r_ipc_diverge, "relative ipc", 10,20,15,10,5);
