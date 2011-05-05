@@ -243,22 +243,22 @@ printf "[Prediction]: Total: %3d, diff: %3d, %0.04f%%\n",
 
 print "Divergent details:\n";
 my @weighted_speedup = (values %best_pred_a_speedup);
-print_avg("[Prediction] absolute speedup", \@weighted_speedup, $total);
+print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("[Pred] Increased relative speedup", \@weighted_speedup, $total);
+print_avg("Increased relative speedup", \@weighted_speedup, $total);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
-print_avg("[Pred] absolute mpki", \@absolute_mpki, $total);
+print_avg("absolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %best_pred_r_mpki_diverge);
-print_avg("[Pred] Increased relative mpki", \@relative_mpki, $total);
+print_avg("Increased relative mpki", \@relative_mpki, $total);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
-print_avg("[Pred] absolute ipc", \@absolute_ipc, $total);
+print_avg("absolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("[Pred] Increased relative ipc", \@relative_ipc, $total);
+print_avg("Increased relative ipc", \@relative_ipc, $total);
 
 print_top(\%best_pred_r_speedup, "relative speedup",10, 10,8,6,4,2);
 print_top(\%best_pred_r_mpki_diverge, "relative mpki", 10,50,40,30,20,10,5);
