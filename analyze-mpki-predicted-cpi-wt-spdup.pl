@@ -214,8 +214,7 @@ my @weighted_speedup = (values %best_pred_a_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("Increase in relative speedup", \@weighted_speedup, 
-																	$total);
+print_avg("Increase in relative speedup", \@weighted_speedup, $total);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
 print_avg("absolute mpki", \@absolute_mpki, $total);

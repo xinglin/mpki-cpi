@@ -222,22 +222,22 @@ LABEL:	for($pg4 = $pg3+1; $pg4 <= $key_num -1 ; $pg4++){
 
 my $same_result = (keys %perfect_predictions);
 my $diff_result = (keys %best_pred_r_speedup);
-my $total2 = $same_result + $diff_result;
+my $total = $same_result + $diff_result;
 printf "Total: %3d, diff: %3d, %0.06f%%\n", 
-			$total2, $diff_result, $diff_result*100/$total2;
+			$total, $diff_result, $diff_result*100/$total;
 
 print "Divergent detail:\n";
 my @weighted_speedup = (values %best_pred_a_speedup);
-print_avg("absolute speedup", \@weighted_speedup, $total2);
+print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("drop in relative speedup", \@weighted_speedup, $total2);
+print_avg("drop in relative speedup", \@weighted_speedup, $total);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
-print_avg("absolute ipc", \@absolute_ipc, $total2);
+print_avg("absolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("drop in relative ipc", \@relative_ipc, $total2);
+print_avg("drop in relative ipc", \@relative_ipc, $total);
 
 print_top(\%best_pred_a_speedup, "absolute divergent speedup", 10);
 print_top(\%best_pred_r_speedup, "relative divergent speedup",10);

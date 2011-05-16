@@ -189,27 +189,27 @@ for ($pg1 = 0; $pg1 <= $key_num-3; $pg1++){
 	}#pg2
 }#pg1
 
-my $total2 = $same_result + $diff_result;
+my $total = $same_result + $diff_result;
 printf "[Prediction]: Total: %3d, diff: %3d, %0.08f%%\n", 
-			$total2, $diff_result, $diff_result*100/$total2;
+			$total, $diff_result, $diff_result*100/$total;
 
 my @weighted_speedup = (values %best_pred_a_speedup);
-print_avg("absolute speedup", \@weighted_speedup, $total2);
+print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("Drop in relative speedup", \@weighted_speedup, $total2);
+print_avg("Drop in relative speedup", \@weighted_speedup, $total);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
-print_avg("absolute mpki", \@absolute_mpki, $total2);
+print_avg("absolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %best_pred_r_mpki_diverge);
-print_avg("Increase in relative mpki", \@relative_mpki, $total2);
+print_avg("Increase in relative mpki", \@relative_mpki, $total);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
-print_avg("absolute ipc", \@absolute_ipc, $total2);
+print_avg("absolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("Increase in relative ipc", \@relative_ipc, $total2);
+print_avg("Increase in relative ipc", \@relative_ipc, $total);
 
 print_top(\%best_pred_a_speedup, "absolute speedup", 10);
 print_top(\%best_pred_r_speedup, "relative speedup",10);

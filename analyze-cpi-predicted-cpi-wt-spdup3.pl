@@ -224,10 +224,9 @@ LABEL:	for($pg3 = $pg2+1; $pg3 <= $key_num -1 ; $pg3++){
 
 my $same_result_pred = (keys %perfect_predictions);
 my $diff_result_pred = (keys %best_pred_r_speedup);
-my $total2 = $same_result_pred + $diff_result_pred;
-
+my $total = $same_result_pred + $diff_result_pred;
 printf "Total: %3d, diff: %3d, %0.04f%%\n", 
-			$total2, $diff_result_pred, $diff_result_pred*100/$total2;
+			$total, $diff_result_pred, $diff_result_pred*100/$total;
 
 print "Divergent details:\n";
 my @weighted_speedup = (values %best_pred_a_speedup);
@@ -250,5 +249,4 @@ print_avg("Increase in relative ipc", \@relative_ipc, $total);
 
 print_top(\%best_pred_r_speedup, "relative speedup",10);
 print_top(\%best_pred_r_mpki_diverge, "relative mpki", 10);
-print_top(\%best_pred_a_mpki_diverge, "absolute mpki", 10);
 print_top(\%best_pred_r_ipc_diverge, "relative ipc", 10);
