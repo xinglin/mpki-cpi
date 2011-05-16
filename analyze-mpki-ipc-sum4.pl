@@ -13,7 +13,8 @@
 #       maximum IPC sum for CPIs based cache partitioning
 # 
 # Performance metrics:
-#       weighted speedup, MPKI sum and IPC sum                  
+#       weighted speedup, MPKI sum and IPC sum      
+#		cache partitioning based on MPKI is used as the baseline            
 #
 use List::Util qw(sum max);
 use Common;
@@ -151,15 +152,15 @@ for ($program1 = 0; $program1 <= $key_num - 4; $program1++){
 		# mpki diverge
 		$mpki_diff = $mpki_total2 - $mpki_total1;
 		$absolute_mpki_diverge{$workload} = $mpki_diff;
-		$relative_mpki_diverge{$workload} = $mpki_diff*100/$mpki_total2; 
+		$relative_mpki_diverge{$workload} = $mpki_diff*100/$mpki_total1; 
 		# ipc diverge
 		$ipc_diff = $ipc_sum - $ipc_total1;
 		$absolute_ipc_diverge{$workload} = $ipc_diff;
-		$relative_ipc_diverge{$workload} = $ipc_diff*100/$ipc_sum;
+		$relative_ipc_diverge{$workload} = $ipc_diff*100/$ipc_total1;
 		# speedup diverge
 		my $speedup_diff = $speedup2-$speedup1;
 		$absolute_speedup_diverge{$workload} = $speedup_diff;
-		$relative_speedup_diverge{$workload} = 	$speedup_diff*100/$speedup2;
+		$relative_speedup_diverge{$workload} = 	$speedup_diff*100/$speedup1;
 			}#pg4
 		}#pg3
 	}#pg2
@@ -176,19 +177,22 @@ print "Divergent details\n";
 my @absolute_speedup = (values %absolute_speedup_diverge);
 print_avg("absolute speedup", \@absolute_speedup, $total);
 my @relative_speedup = (values %relative_speedup_diverge);
-print_avg("drop in relative speedup", \@relative_speedup, $total);
+print_avg("[all]Increase in relative speedup", \@relative_speedup, $total);
+print_avg("[divergent cases]Increase in relative speedup", \@relative_speedup);
 
 # mpki
 my @absolute_mpki = (values %absolute_mpki_diverge);
 print_avg("absolute mpki", \@absolute_mpki, $total);
 my @relative_mpki = (values %relative_mpki_diverge);
-print_avg("drop in relative mpki", \@relative_mpki, $total);
+print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 # ipc
 my @absolute_ipc = (values %absolute_ipc_diverge);
 print_avg("absolute ipc", \@absolute_ipc, $total);
 my @relative_ipc = (values %relative_ipc_diverge);
-print_avg("drop in relative ipc", \@relative_ipc, $total);
+print_avg("[all]Increase in relative ipc", \@relative_ipc, $total);
+print_avg("[divergent cases] in relative ipc", \@relative_ipc);
 
 print_top(\%relative_speedup_diverge, "relative speedup", 5, 10,8,6,4,2);
 print_top(\%relative_mpki_diverge, "relative mpki", 5, 50,40,30,20,10,5);
