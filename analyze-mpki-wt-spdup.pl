@@ -13,7 +13,8 @@
 #		maximum weighted speedup for CPIs based cache partitioning
 # 
 # Performance metrics:
-#		weighted speedup, MPKI sum and IPC sum					
+#		weighted speedup, MPKI sum and IPC sum
+#		cache partitioning based on MPKI is used as baseline
 #
 use List::Util qw(sum);
 use Common;
@@ -80,7 +81,6 @@ read_all_mpki_cpi();
 %absolute_ipc_diverge  = ();
 %absolute_speedup = ();		#weighted speedup
 
-# cache partitioning optimized for weighted speedup is used as baseline.
 %relative_mpki_diverge = ();
 %relative_ipc_diverge  = ();
 %relative_speedup = ();
@@ -132,21 +132,21 @@ for ($program1 = 0; $program1 < $key_num-1; $program1++){
 		# mpki diverge
 		$mpki_diff = $mpki_total2-$mpki_total1;	#mpki_total2 > total1
 		$absolute_mpki_diverge{$workload} = $mpki_diff;
-		$relative_mpki_diverge{$workload} = $mpki_diff*100/$mpki_total2; 
+		$relative_mpki_diverge{$workload} = $mpki_diff*100/$mpki_total1; 
 		# ipc diverge
 		$ipc_diff = $ipc_total2-$ipc_total1;
 		$absolute_ipc_diverge{$workload} = $ipc_diff;
-		$relative_ipc_diverge{$workload} = $ipc_diff*100/$ipc_total2;
+		$relative_ipc_diverge{$workload} = $ipc_diff*100/$ipc_total1;
 		# speedup
 		$speedup_diff = $speedup - $speedup1;
 		$absolute_speedup{$workload} = $speedup_diff;
-		$relative_speedup{$workload} = $speedup_diff*100/$speedup;
+		$relative_speedup{$workload} = $speedup_diff*100/$speedup1;
 
 		$output_str = sprintf("absolute diff in mpki: %f, ipc: %f\n", 
 								$mpki_diff, $ipc_diff);
 		debug_info($output_str);	
 		$output_str = sprintf("relative diff in mpki: %.06f%%, ipc: %.06f%%\n", 
-				$mpki_diff*100/$mpki_total2, $ipc_diff*100/$ipc_total2);
+				$mpki_diff*100/$mpki_total1, $ipc_diff*100/$ipc_total1);
 		debug_info($output_str);
 
 	}
@@ -163,19 +163,22 @@ my @weighted_speedup = (values %absolute_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %relative_speedup);
-print_avg("drop in relative speedup", \@weighted_speedup, $total);
+print_avg("[all] Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[divergent cases]Increase in relative speedup", \@weighted_speedup);
 
 my @absolute_mpki = (values %absolute_mpki_diverge);
-print_avg("absolute mpki", \@absolute_mpki, $total);
+print_avg("\nabsolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %relative_mpki_diverge);
-print_avg("drop in relative mpki", \@relative_mpki, $total);
+print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 my @absolute_ipc = (values %absolute_ipc_diverge);
-print_avg("absolute ipc sum", \@absolute_ipc, $total);
+print_avg("\nabsolute ipc sum", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %relative_ipc_diverge);
-print_avg("drop in relative ipc sum", \@relative_ipc, $total);
+print_avg("[all]Increase in relative ipc sum", \@relative_ipc, $total);
+print_avg("[divergent cases]Increase in relative ipc sum", \@relative_ipc);
 
 print_top(\%absolute_speedup, "absolute speedup", 10);
 
