@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-predicted-cpi-fix-way - analyze the divergencs in cache 
+# analyze-mpki-predicted-cpi-fix-way - analyze the divergence in cache 
 #									   partitioning when optimized for MPKI or
-#									   weighted speedup, based on global way 
+#									   weighted speedup, based on fixed-way 
 #									   pair based CPI predictions and MPKIs
 #									   for 2-benchmark workload.
 # Purpose:
@@ -14,7 +14,8 @@
 #       maximum weighted speedup for CPIs based cache partitioning
 # 
 # Performance metrics:
-#       weighted speedup, MPKI sum and IPC sum                  
+#       weighted speedup, MPKI sum and IPC sum    
+#		cache partitioning based on MPKI is used as the baseline              
 #
 use List::Util qw(sum);
 use Common;
@@ -190,19 +191,22 @@ my @weighted_speedup = (values %best_pred_a_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[all]Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[divergent cases]Increase in relative speedup", \@weighted_speedup);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
 print_avg("absolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %best_pred_r_mpki_diverge);
-print_avg("Increased in relative mpki", \@relative_mpki, $total);
+print_avg("[all]Increased in relative mpki", \@relative_mpki, $total);
+print_avg("[divergent cases]Increased in relative mpki", \@relative_mpki);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
 print_avg("absolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("Increase in relative ipc", \@relative_ipc, $total);
+print_avg("[all]Increase in relative ipc", \@relative_ipc, $total);
+print_avg("[divergent cases]Increase in relative ipc", \@relative_ipc);
 
 print_top(\%best_pred_r_speedup, "relative speedup",10,10,8,6,4,2);
 print_top(\%best_pred_r_mpki_diverge, "relative mpki", 10,50,40,30,20,10,5);
