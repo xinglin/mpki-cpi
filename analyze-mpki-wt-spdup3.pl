@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-wt-spdup3 - analyze the differences in cache partitionings 
-#                          when optimized for MPKI sum or weighted speedup
+# analyze-mpki-wt-spdup3 - analyze the differences in cache partitions 
+#                          when optimized for MPKI sum or weighted speedup,
 #                          based on MPKIs and accurate CPIs 
 #                          for 3-benchmark workloads. 
 # Purpose:
@@ -14,7 +14,7 @@
 # 
 # Performance metrics:
 #       weighted speedup, MPKI sum and IPC sum                  
-#		cache partitioning bsed on MPKI is used as the baseline
+#		cache partitioning based on MPKI is used as the baseline
 #
 use List::Util qw(sum max);
 use Common;
@@ -83,10 +83,10 @@ foreach $key (keys %programs){
 print "\n\nbegin to calculate all possible 3-benchmark workloads...\n";
 my @keys = (keys %programs);
 my $key_num = scalar(@keys);
-my $program1 = 0, $program2 = 0, $program3 = 0; 
-my $mpki_min_i = 0, $mpki_min_j = 0, $best_i = 0, $best_j = 0,$best_speedup=0;
-my $same_result = 0, $diff_result = 0;
-my $length = 0, $speedup_diff = 0, $mpki_diff = 0, $ipc_diff = 0;
+my ($program1, $program2, $program3) = (0,0,0); 
+my ($mpki_min_i, $mpki_min_j, $best_i, $best_j, $best_speedup) = (0,0,0,0,0);
+my ($same_result, $diff_result) = (0,0);
+my ($length, $speedup_diff, $mpki_diff, $ipc_diff) = (0,0,0,0);
 my $output_str = 0;
 for ($program1 = 0; $program1 <= $key_num - 3; $program1++){
 	for($program2 = $program1+1; $program2 <= $key_num - 2 ; $program2++){
@@ -153,9 +153,8 @@ for ($program1 = 0; $program1 <= $key_num - 3; $program1++){
 
 print "\n-------------------------------------------------------------\n\n";
 my $total = $same_result + $diff_result;
-printf "Total results: %d, diff results: $diff_result\n".
-		"percentage: %.02f%%\n\n", $total,
-			($diff_result)*100/$total;
+printf "Total results: $total, diff results: $diff_result\n".
+		"percentage: %.02f%%\n\n", ($diff_result)*100/$total;
 
 print "Divergent details:\n";
 my @absolute_speedup = (values %absolute_weighted_speedup);
@@ -171,7 +170,7 @@ print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
 print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 my @absolute_ipc = (values %absolute_ipc_diverge);
-print_avg("absolute ipc", \@absolute_ipc, $total);
+print_avg("\nabsolute ipc", \@absolute_ipc, $total);
 my @relative_ipc = (values %relative_ipc_diverge);
 print_avg("[all]Increase in relative ipc", \@relative_ipc, $total);
 print_avg("[divergent cases]Increase in relative ipc", \@relative_ipc);
