@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-wt-spdup4 - analyze the differences in cache partitionings, 
-#                          when optimized for MPKI sum or weighted speedup
+# analyze-mpki-wt-spdup4 - analyze the differences in cache partitionings 
+#                          when optimized for MPKI sum or weighted speedup,
 #                          based on MPKIs and accurate CPIs 
 #                          for 4-benchmark workloads. 
 # Purpose:
@@ -85,25 +85,25 @@ print "\n\nbegin to calculate all possible combinations ".
 	  "for 4-benchmark workloads...\n";
 my @keys = (keys %programs);
 my $key_num = scalar(@keys);
-my $program1 = 0, $program2 = 0, $program3 = 0,$prog4 = 0; 
+my ($prog1, $prog2, $prog3, $prog4) = (0,0,0,0); 
 my ($mpki_min_i, $mpki_min_j, $mpki_min_k) = (0,0,0);
 my ($ipc_i, $ipc_j, $ipc_k, $speedup) = (0,0,0,0);
 my ($same_result, $diff_result) = (0, 0);
 my ($length, $speedup_diff, $mpki_diff, $ipc_diff) = (0,0,0,0);
 my $output_str = 0;
-for ($program1 = 0; $program1 <= $key_num - 4; $program1++){
-	for($program2 = $program1+1; $program2 <= $key_num - 3 ; $program2++){
-		for($program3 = $program2+1; $program3 <= $key_num - 2 ; $program3++){
-		for($prog4 = $program3+1; $prog4 <= $key_num - 1 ; $prog4++){
+for ($prog1 = 0; $prog1 <= $key_num - 4; $prog1++){
+	for($prog2 = $prog1+1; $prog2 <= $key_num - 3 ; $prog2++){
+		for($prog3 = $prog2+1; $prog3 <= $key_num - 2 ; $prog3++){
+		for($prog4 = $prog3+1; $prog4 <= $key_num - 1 ; $prog4++){
 		($mpki_min_i, $mpki_min_j, $mpki_min_k) 
-							= mpki_min4($MPKIs[$programs{$keys[$program1]}], 
-								$MPKIs[$programs{$keys[$program2]}],
-								$MPKIs[$programs{$keys[$program3]}],
+							= mpki_min4($MPKIs[$programs{$keys[$prog1]}], 
+								$MPKIs[$programs{$keys[$prog2]}],
+								$MPKIs[$programs{$keys[$prog3]}],
 								$MPKIs[$programs{$keys[$prog4]}]);
 		($ipc_i, $ipc_j, $ipc_k, $speedup) 
-							= max_speedup4($CPIs[$programs{$keys[$program1]}], 
-								$CPIs[$programs{$keys[$program2]}],
-								$CPIs[$programs{$keys[$program3]}],
+							= max_speedup4($CPIs[$programs{$keys[$prog1]}], 
+								$CPIs[$programs{$keys[$prog2]}],
+								$CPIs[$programs{$keys[$prog3]}],
 								$CPIs[$programs{$keys[$prog4]}]);
 		if($mpki_min_i == $ipc_i && $mpki_min_j == $ipc_j 
 								&& $mpki_min_k == $ipc_k){
@@ -114,42 +114,42 @@ for ($program1 = 0; $program1 <= $key_num - 4; $program1++){
 		}
 	
 		# difference details
-		$length = scalar(@{ $MPKIs[$programs{$keys[$program1]}] });
+		$length = scalar(@{ $MPKIs[$programs{$keys[$prog1]}] });
 		
-		my $mpki_total1 = $MPKIs[$programs{$keys[$program1]}][$mpki_min_i] + 
-				$MPKIs[$programs{$keys[$program2]}][$mpki_min_j] +
-				$MPKIs[$programs{$keys[$program3]}][$mpki_min_k] +
+		my $mpki_total1 = $MPKIs[$programs{$keys[$prog1]}][$mpki_min_i] + 
+				$MPKIs[$programs{$keys[$prog2]}][$mpki_min_j] +
+				$MPKIs[$programs{$keys[$prog3]}][$mpki_min_k] +
 				$MPKIs[$programs{$keys[$prog4]}][$length - $mpki_min_i 
 											- $mpki_min_j - $mpki_min_k - 4];
-		my $mpki_total2 = $MPKIs[$programs{$keys[$program1]}][$ipc_i] + 
-				$MPKIs[$programs{$keys[$program2]}][$ipc_j] + 
-				$MPKIs[$programs{$keys[$program3]}][$ipc_k] + 
+		my $mpki_total2 = $MPKIs[$programs{$keys[$prog1]}][$ipc_i] + 
+				$MPKIs[$programs{$keys[$prog2]}][$ipc_j] + 
+				$MPKIs[$programs{$keys[$prog3]}][$ipc_k] + 
 				$MPKIs[$programs{$keys[$prog4]}][$length - $ipc_i 
 											- $ipc_j -$ipc_k - 4];
 
-		my $ipc_total1 = 1/$CPIs[$programs{$keys[$program1]}][$mpki_min_i] + 
-				1/$CPIs[$programs{$keys[$program2]}][$mpki_min_j] +
-				1/$CPIs[$programs{$keys[$program3]}][$mpki_min_k] +
+		my $ipc_total1 = 1/$CPIs[$programs{$keys[$prog1]}][$mpki_min_i] + 
+				1/$CPIs[$programs{$keys[$prog2]}][$mpki_min_j] +
+				1/$CPIs[$programs{$keys[$prog3]}][$mpki_min_k] +
 				1/$CPIs[$programs{$keys[$prog4]}][$length - $mpki_min_i 
 											- $mpki_min_j- $mpki_min_k - 4];
-		my $ipc_total2 = 1/$CPIs[$programs{$keys[$program1]}][$ipc_i] + 
-				1/$CPIs[$programs{$keys[$program2]}][$ipc_j] +
-				1/$CPIs[$programs{$keys[$program3]}][$ipc_k] +
+		my $ipc_total2 = 1/$CPIs[$programs{$keys[$prog1]}][$ipc_i] + 
+				1/$CPIs[$programs{$keys[$prog2]}][$ipc_j] +
+				1/$CPIs[$programs{$keys[$prog3]}][$ipc_k] +
 				1/$CPIs[$programs{$keys[$prog4]}][$length - $ipc_i 
 											- $ipc_j - $ipc_k - 4];
 
-         my $speedup1 = ($CPIs[$programs{$keys[$program1]}][$length-1]/
-                        $CPIs[$programs{$keys[$program1]}][$mpki_min_i])+
-                ($CPIs[$programs{$keys[$program2]}][$length - 1]/
-                $CPIs[$programs{$keys[$program2]}][$mpki_min_j]) +
-                ($CPIs[$programs{$keys[$program3]}][$length - 1]/
-                $CPIs[$programs{$keys[$program3]}][$mpki_min_k]) +
+         my $speedup1 = ($CPIs[$programs{$keys[$prog1]}][$length-1]/
+                        $CPIs[$programs{$keys[$prog1]}][$mpki_min_i])+
+                ($CPIs[$programs{$keys[$prog2]}][$length - 1]/
+                $CPIs[$programs{$keys[$prog2]}][$mpki_min_j]) +
+                ($CPIs[$programs{$keys[$prog3]}][$length - 1]/
+                $CPIs[$programs{$keys[$prog3]}][$mpki_min_k]) +
                 ($CPIs[$programs{$keys[$prog4]}][$length - 1]/
                 $CPIs[$programs{$keys[$prog4]}][$length- $mpki_min_i 
                             - $mpki_min_j -$mpki_min_k - 4]);
 
-		my $workload = "$keys[$program1]+$keys[$program2]+$keys[$program3]"
-						."$keys[$prog4]";
+		my $workload = "$keys[$prog1]+$keys[$prog2]+$keys[$prog3]"
+						."+$keys[$prog4]";
         $speedup_diff = $speedup - $speedup1;
         $absolute_weighted_speedup{$workload} = $speedup_diff;
         $relative_weighted_speedup{$workload} = $speedup_diff*100/$speedup1;
@@ -168,9 +168,8 @@ for ($program1 = 0; $program1 <= $key_num - 4; $program1++){
 
 print "\n-------------------------------------------------------------\n\n";
 my $total = $same_result + $diff_result;
-printf "Total results: %d, diff results: $diff_result\n".
-		"percentage: %.04f%%\n\n", $total,
-			($diff_result)*100/$total;
+printf "Total results: $total, diff results: $diff_result\n".
+		"percentage: %.04f%%\n\n", ($diff_result)*100/$total;
 
 print "Divergent details:\n";
 # weighted speedup
