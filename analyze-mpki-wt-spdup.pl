@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-wt-spdup - analyze the differences in cache partitionings 
+# analyze-mpki-wt-spdup - analyze the differences in cache partitions 
 #						  when optimized for MPKI sum or weighted speedup,
 #						  based on MPKIs or accurate CPIs 
 #						  for 2-benchmark workloads. 
@@ -89,9 +89,9 @@ read_all_mpki_cpi();
 print "\n\nbegin to calculate all possible combinations...\n";
 my @keys = (keys %programs);
 my $key_num = scalar(@keys);
-my $program1 = 0, $program2 = 0;
-my $same_result = 0, $diff_result = 0;
-my $length = 0, $speedup_diff = 0, $mpki_diff = 0, $ipc_diff = 0;
+my ($program1, $program2) = (0,0);
+my ($same_result, $diff_result) = (0,0);
+my ($length, $speedup_diff, $mpki_diff, $ipc_diff) = (0,0,0,0);
 my $output_str = 0;
 for ($program1 = 0; $program1 < $key_num-1; $program1++){
 	for($program2 = $program1+1; $program2 <= $key_num -1 ; $program2++){
@@ -148,22 +148,20 @@ for ($program1 = 0; $program1 < $key_num-1; $program1++){
 		$output_str = sprintf("relative diff in mpki: %.06f%%, ipc: %.06f%%\n", 
 				$mpki_diff*100/$mpki_total1, $ipc_diff*100/$ipc_total1);
 		debug_info($output_str);
-
 	}
 }
 
 print "\n-------------------------------------------------------------\n\n";
 my $total = $same_result + $diff_result;
-printf "Total results: %d, diff result: $diff_result\n".
-		"percentage: %.02f%%\n\n", $total,
-			($diff_result)*100/$total;
+printf "Total results: $total, diff result: $diff_result\n".
+		"percentage: %.02f%%\n\n", ($diff_result)*100/$total;
 
 print "Divergent detail:\n";
 my @weighted_speedup = (values %absolute_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %relative_speedup);
-print_avg("[all] Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[all]Increase in relative speedup", \@weighted_speedup, $total);
 print_avg("[divergent cases]Increase in relative speedup", \@weighted_speedup);
 
 my @absolute_mpki = (values %absolute_mpki_diverge);
@@ -181,11 +179,7 @@ print_avg("[all]Increase in relative ipc sum", \@relative_ipc, $total);
 print_avg("[divergent cases]Increase in relative ipc sum", \@relative_ipc);
 
 print_top(\%absolute_speedup, "absolute speedup", 10);
-
 print_top(\%relative_speedup, "relative speedup",10,10,8,6,4,2);
-
 print_top(\%relative_mpki_diverge, "relative mpki", 10,50,40,30,20,10,5);
-
 print_top(\%absolute_ipc_diverge, "absolute ipc sum",10);
-
 print_top(\%relative_ipc_diverge, "relative ipc sum", 10, 20,15,10,5);
