@@ -4,20 +4,23 @@
 #						   benchmark.
 #
 use List::Util qw(sum);
+use Common;
 #
-# MPKIs - MPKI for each program
+# MPKIs - MPKIs for each program
 # 
 # FIXME: remember to add an array here whenever a new program is added. 
-#        $MPKIs = $programs + 1.
+#        Make sure this equation holds: $MPKIs = $programs + 1.
+#
 my @MPKIs = (
 	[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],#20
 	[],[],[],[],
 );
 
 #
-# CPIs - CPI for each program
+# CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
+#        Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
 	[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],#20
@@ -49,33 +52,6 @@ sub debug_info {
 	}
 }
 
-sub read_mpki_cpi {
-	my ($filename, $mpkis, $cpis) = @_;
-	my @mpkis = @{ $mpkis };
-	my @cpis  = @{ $cpis  };
-
-	open(FH, "<./data/$filename") or die("fail to open $filename\n");
-
-	print "read data for $filename\n";
-	my $line = <FH>;
-	my $i = 0;
-	while ($line = <FH> ){
-		chomp $line;
-		#print "$line\n";
-		my $mpki = qx(echo $line | cut -d, -f2);
-		chomp $mpki;
-		my $cpi = qx(echo  $line | cut -d, -f3);
-		chomp $cpi;
-	
-		#print "$mpki, $cpi\n";
-		if( $mpki != 0 && $cpi != 0){
-			$mpkis->[$i] = $mpki;
-			$cpis->[$i]  = $cpi;
-			$i ++;
-		}
-	}
-	close FH;
-}
 
 # read mpki and cpi information for programs
 print "read mpki and cpi information for programs...\n";
@@ -114,7 +90,7 @@ sub output_predict_cpi {
 	}
 	
 	my $output_str = sprintf("way%d + way%d:: %d: %0.08f, %0.04f%%\n", 
-						$way1,$way2, $way_of_max_delta, 
+						$way1+1,$way2+1, $way_of_max_delta, 
 						$max_delta, $max_delta*100/$cpis[$way_of_max_delta]);
 	debug_info($output_str);
 
