@@ -80,7 +80,8 @@ sub read_predicted_cpis {
 
 #
 # return the way index i which results in the minimum MPKI sum
-# for combinations of 2 programs
+# for combinations of 2 programs. 
+# The corresponding cache partition will be (i+1, 16-i-1).
 #
 use constant MAX_MPKI => 1000;
 
@@ -90,13 +91,13 @@ sub mpki_min {
     my @array2 = @{ $array2 };
 
     if (scalar(@array1) != scalar(@array2) ){
-        fatal("the length of these two arrays are not equal!");
+        fatal("[mpki_min]: the length of these two arrays are not equal!");
     }
 
     my $length = @array1;
     debug_info("array length: $length\n");
 
-    my ($i, $element1, $element2,$min_i,$sum);
+    my ($i, $element1, $element2, $min_i, $sum) = (0, 0, 0, 0, 0);
     my $min_sum = MAX_MPKI;
     for ( $i = 0; $i < $length-1; $i++ ){
         $element1 = $array1[$i];
@@ -115,6 +116,7 @@ sub mpki_min {
 #
 # return the way index (i,j) which results in the minimum MPKI sum 
 # for combinations of 3 programs
+# The corresponding cache partition will be (i+1, j+1, 16-i-j-2).
 #
 sub mpki_min3 {
     my ($array1, $array2, $array3) = @_;
@@ -124,16 +126,16 @@ sub mpki_min3 {
 
     if (scalar(@array1) != scalar(@array2)
             || scalar(@array1) != scalar(@array3) ){
-        fatal("the length of these three arrays are not equal!");
+        fatal("[mpki_min3]: the length of these three arrays are not equal!");
     }
 
     my $length = @array1;
     debug_info("array length: $length\n");
 
     my ($i, $j) = (0, 0);
-    my ($element1, $element2,$element3);
+    my ($element1, $element2, $element3) = (0, 0, 0);
     my $min_sum = MAX_MPKI;
-	my ($min_i, $min_j, $sum);
+	my ($min_i, $min_j, $sum) = (0, 0, 0);
     for ( $i = 0; $i < $length - 2; $i++ ){
         for($j = 0; $j <= $length - $i - 3; $j++ ){
             $element1 = $array1[$i];
@@ -155,6 +157,7 @@ sub mpki_min3 {
 #
 # return the way index (i,j,k) which results in the minimum MPKI sum
 # for combination of 4 benchmarks.
+# The corresponding cache partition will be (i+1, j+1, k+1, 16-i-j-k-3).
 #
 sub mpki_min4 {
     my ($array1, $array2, $array3, $array4) = @_;
@@ -166,18 +169,18 @@ sub mpki_min4 {
     if (scalar(@array1) != scalar(@array2) 
             || scalar(@array1) != scalar(@array3)
                 || scalar(@array1 != scalar(@array4))){
-        fatal("the length of these three arrays are not equal!");
+        fatal("[mpki_min4]: the length of these three arrays are not equal!");
     }
 
     my $length = @array1;
     #debug_info("array length: $length\n");
     my ($i,$j,$k) = (0,0,0);
-    my ($element1, $element2, $element3, $element4);
+    my ($element1, $element2, $element3, $element4) = (0,0,0,0);
     my $min_sum = MAX_MPKI;
-	my ($min_i, $min_j, $min_k,$sum);
+	my ($min_i, $min_j, $min_k, $sum) = (0,0,0,0);
     for ( $i = 0; $i <= $length - 4; $i++ ){
         for($j = 0; $j <= $length - $i - 4; $j++ ){
-            for($k = 0; $k <= $length - $i-$j - 4; $k++ ){
+            for($k = 0; $k <= $length - $i -$j - 4; $k++ ){
             $element1 = $array1[$i];
             $element2 = $array2[$j];
             $element3 = $array3[$k];
@@ -199,8 +202,9 @@ sub mpki_min4 {
 }
 
 #
-# return the index way i which result max weighted speedup
-# for combinations of 2 programs
+# return the index way i which results in max weighted speedup
+# for combinations of 2 programs.
+# The corresponding cache partition will be (i+1, 16-i-1).
 #
 sub max_speedup {
     my ($array1, $array2) = @_;
@@ -208,12 +212,12 @@ sub max_speedup {
     my @cpis2 = @{ $array2 };
 
     if (scalar(@cpis1) != scalar(@cpis2) ){
-        fatal("the length of these two arrays are not equal!");
+        fatal("[max_speedup]: the length of these two arrays are not equal!");
     }
 
     my $length = @cpis1;
 
-    my ($i, $speedup1, $speedup2,$best_i,$speedup);
+    my ($i, $speedup1, $speedup2, $best_i, $speedup) = (0,0,0,0,0);
 	my $best_speedup = 0;
     for ( $i = 0; $i < $length-1; $i++ ){
         $speedup1 = $cpis1[$length-1]/$cpis1[$i];
@@ -230,8 +234,9 @@ sub max_speedup {
 }
 
 #
-# return the way index i which result max IPC sum
+# return the way index i which results in max IPC sum
 # for 2-benchmark workloads
+# The corresponding cache partition will be (i+1, 16-i-1).
 #
 sub max_ipc_sum {
     my ($array1, $array2) = @_;
@@ -239,12 +244,12 @@ sub max_ipc_sum {
     my @cpis2 = @{ $array2 };
 
     if (scalar(@cpis1) != scalar(@cpis2) ){
-        fatal("the length of these two arrays are not equal!");
+        fatal("[max_ipc_sum]: the length of these two arrays are not equal!");
     }
 
     my $length = @cpis1;
 
-    my ($i, $ipc_sum1, $ipc_sum2,$best_i,$ipc_sum);
+    my ($i, $ipc_sum1, $ipc_sum2, $best_i, $ipc_sum) = (0,0,0,0,0);
 	my $best_ipc_sum = 0;
     for ( $i = 0; $i < $length-1; $i++ ){
         $ipc_sum1 = 1/$cpis1[$i];
@@ -261,8 +266,7 @@ sub max_ipc_sum {
 }
 
 #
-# return the way index i which result in the max err between the predicted CPIs 
-# and the accurate CPIs
+# return the way index i which results in the max error in CPI predictions
 #
 sub max_cpi_err {
     my ($array1, $array2) = @_;
@@ -270,7 +274,7 @@ sub max_cpi_err {
     my @pred_cpis2 = @{ $array2 };
 
     if (scalar(@cpis1) != scalar(@pred_cpis2) ){
-        fatal("the length of these two arrays are not equal!");
+        fatal("[max_cpi_err]: the length of these two arrays are not equal!");
     }
 
     my $length = @cpis1;
@@ -279,7 +283,6 @@ sub max_cpi_err {
 	my ($max_i, $max_cpi_err) = (0,0);
     for ( $i = 0; $i <= $length-1; $i++ ){
         $cpi_diff = abs($cpis1[$i] - $pred_cpis2[$i])*100/$cpis1[$i];
-        #print "$i: $element1 + $element2 = $sum\n";
         if( $cpi_diff > ($max_cpi_err) ){
 			$max_cpi_err = $cpi_diff;
             $max_i   = $i;
@@ -290,8 +293,9 @@ sub max_cpi_err {
 }
 
 #
-# return the way index (i,j) which result max weighted speedup 
+# return the way index (i,j) which results in max weighted speedup 
 # for 3-benchmark workloads. 
+# The corresponding cache partition will be (i+1, j+1, 16-i-j-2).
 #
 sub max_speedup3 {
     my ($array1, $array2,$array3) = @_;
@@ -301,20 +305,20 @@ sub max_speedup3 {
 
     if (scalar(@cpis1) != scalar(@cpis2) ||
 			scalar(@cpis1) != scalar(@cpis3) ){
-        fatal("the lengths of these three arrays are not equal!");
+        fatal("[max_speedup3]: the lengths of the three arrays are not equal!");
     }
 
     my $length = @cpis1;
 
-    my ($i, $j, $speedup1, $speedup2, $speedup3, $best_i,$best_j,$speedup);
+    my ($i, $j, $speedup1, $speedup2, $speedup3, $best_i, $best_j, $speedup)
+			= (0,0,0,0,0,0,0,0);
 	my $best_speedup = 0;
     for ( $i = 0; $i < $length-2; $i++ ){
       for ( $j = 0; $j <= $length - $i -3; $j++ ){
         $speedup1 = $cpis1[$length-1]/$cpis1[$i];
         $speedup2 = $cpis2[$length-1]/$cpis2[$j];
-        $speedup3 = $cpis3[$length-1]/$cpis3[$length - $i -$j - 3];
+        $speedup3 = $cpis3[$length-1]/$cpis3[$length-$i-$j-3];
         $speedup = $speedup1 + $speedup2 + $speedup3;
-        #print "$i: $element1 + $element2 = $sum\n";
         if( $speedup > ($best_speedup) ){
             $best_speedup = $speedup;
             $best_i  = $i;
@@ -328,8 +332,9 @@ sub max_speedup3 {
 }
 
 #
-# return the way index (i,j) which result in max IPC sum
+# return the way index (i,j) which results in max IPC sum
 # for 3-benchmark workloads. 
+# The corresponding cache partition will be (i+1, j+1, 16-i-j-2).
 #
 sub max_ipc_sum3 {
     my ($array1, $array2,$array3) = @_;
@@ -344,7 +349,8 @@ sub max_ipc_sum3 {
 
     my $length = @cpis1;
 
-    my ($i, $j, $ipc1, $ipc2, $ipc3, $best_i,$best_j,$ipc_sum);
+    my ($i, $j, $ipc1, $ipc2, $ipc3, $best_i, $best_j, $ipc_sum)
+			= (0,0,0,0,0,0,0,0);
 	my $best_ipc_sum = 0;
     for ( $i = 0; $i < $length-2; $i++ ){
       for ( $j = 0; $j <= $length - $i -3; $j++ ){
@@ -352,7 +358,6 @@ sub max_ipc_sum3 {
         $ipc2 = 1/$cpis2[$j];
         $ipc3 = 1/$cpis3[$length - $i -$j - 3];
         $ipc_sum = $ipc1 + $ipc2 + $ipc3;
-        #print "$i: $element1 + $element2 = $sum\n";
         if( $ipc_sum > ($best_ipc_sum) ){
             $best_ipc_sum = $ipc_sum;
             $best_i  = $i;
@@ -366,11 +371,12 @@ sub max_ipc_sum3 {
 }
 
 #
-# return the way index (i,j,k) which result max weighted speedup
+# return the way index (i,j,k) which results in max weighted speedup
 # for 4-benchmark workloads.
+# The corresponding cache partition will be (i+1, j+1, k+1, 16-i-j-k-3).
 #
 sub max_speedup4 {
-    my ($array1, $array2,$array3,$array4) = @_;
+    my ($array1, $array2, $array3, $array4) = @_;
     my @cpis1 = @{ $array1 };
     my @cpis2 = @{ $array2 };
     my @cpis3 = @{ $array3 };
@@ -379,13 +385,14 @@ sub max_speedup4 {
     if (scalar(@cpis1) != scalar(@cpis2) ||
     	scalar(@cpis1) != scalar(@cpis3) ||
 			scalar(@cpis1) != scalar(@cpis4) ){
-        fatal("the lengths of these four arrays are not equal!");
+        fatal("[max_spdup4]: the lengths of these four arrays are not equal!");
     }
 
     my $length = @cpis1;
 
-    my ($i, $j, $k, $speedup1, $speedup2, $speedup3, $speedup4);
-	my ($best_i, $best_j, $best_k, $speedup);
+    my ($i, $j, $k, $speedup1, $speedup2, $speedup3, $speedup4)
+			= (0,0,0,0,0,0,0);
+	my ($best_i, $best_j, $best_k, $speedup) = (0,0,0,0);
 	my $best_speedup = 0;
     for ( $i = 0; $i <= $length - 4; $i++ ){
       for ( $j = 0; $j <= $length - $i - 4; $j++ ){
@@ -395,7 +402,6 @@ sub max_speedup4 {
         $speedup3 = $cpis3[$length-1]/$cpis3[$k];
         $speedup4 = $cpis4[$length-1]/$cpis4[$length - $i -$j -$k - 4];
         $speedup = $speedup1 + $speedup2 + $speedup3 + $speedup4;
-        #print "$i: $element1 + $element2 = $sum\n";
         if( $speedup > ($best_speedup) ){
             $best_speedup = $speedup;
             $best_i  = $i;
@@ -429,8 +435,8 @@ sub max_ipc_sum4 {
 
     my $length = @cpis1;
 
-    my ($i, $j, $k, $ipc1, $ipc2, $ipc3, $ipc4);
-	my ($best_i, $best_j, $best_k, $ipc_sum);
+    my ($i, $j, $k, $ipc1, $ipc2, $ipc3, $ipc4) = (0,0,0,0,0,0,0);
+	my ($best_i, $best_j, $best_k, $ipc_sum) = (0,0,0,0);
 	my $best_ipc_sum = 0;
     for ( $i = 0; $i <= $length - 4; $i++ ){
       for ( $j = 0; $j <= $length - $i - 4; $j++ ){
@@ -440,7 +446,7 @@ sub max_ipc_sum4 {
         $ipc3 = 1/$cpis3[$k];
         $ipc4 = 1/$cpis4[$length - $i -$j -$k - 4];
         $ipc_sum = $ipc1 + $ipc2 + $ipc3 + $ipc4;
-        #print "$i: $element1 + $element2 = $sum\n";
+
         if( $ipc_sum > ($best_ipc_sum) ){
             $best_ipc_sum = $ipc_sum;
             $best_i  = $i;
@@ -475,19 +481,19 @@ sub print_avg {
 }
 
 #
-# print top_num values and number of values above thresholds in a hash.
+# print top_num values and number of values above thresholds for a hash.
 #
 sub print_top {
 	my($hash, $name, $top_num, @thresholds) = @_;
 	my %hash = %{ $hash };
 	my ($i, @counts) = (0,0);
-	print "top $top_num highest $name:\n";
+	print "Top $top_num highest $name:\n";
 
 	for($i = 0; $i < scalar(@thresholds); $i++){
 		$counts[$i] = 0;
 	}
 
-	# sort the values of this hash first
+	# sort the values in this hash first
 	foreach my $key ((sort { $hash{$b} <=> $hash{$a} }
                     (keys %hash))){
 		for($i = 0; $i < scalar(@thresholds); $i++){
