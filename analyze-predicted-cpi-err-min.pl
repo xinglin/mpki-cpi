@@ -19,7 +19,7 @@ my @MPKIs = (
 #
 # CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
 #		 Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
@@ -28,8 +28,11 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPIs for each program
+# predicted_CPIs - predicted CPIs for each program
 # 
+# Four-dimensional array indexed by [program][way1][way2][way]
+# CPIs are predicted based on CPI samples of way1 and way2
+#
 my @predicted_CPIs = ();
 
 #
@@ -66,28 +69,6 @@ sub read_all_mpki_cpi {
 	print "read accurate mpkis and cpis\t\t\t\t\t[done]\n";
 }
 
-sub read_predicted_cpis {
-	my ($filename, $predicted_cpis) = @_;
-
-	open(FH, "<./predicted_cpi/$filename") or die("fail to open $filename\n");
-	#debug_info("$filename\n");
-	my $line = <FH>;
-	my $i = 0;
-	while ($line = <FH> ){
-		chomp $line;
-		#print "$line\n";
-		my $cpi = qx(echo  $line | cut -d, -f3);
-		chomp $cpi;
-	
-		#print "$mpki, $cpi\n";
-		if( $cpi != 0){
-			$predicted_cpis->[$i]  = $cpi;
-			$i ++;
-		}
-	}
-	close FH;
-}
-
 sub read_all_predicted_cpis {
 	# read predicted cpis
 	print "read predicted cpis for programs\t\t\t\t[started]\n";
@@ -96,7 +77,8 @@ sub read_all_predicted_cpis {
 	foreach $key (keys %programs){
 		my $length = scalar( @{$CPIs[$programs{$key}]} );
 		print "$key\n";
-		my @array1 = 0, $i=0,$j=0;
+		my @array1 = 0;
+		my ($i, $j) = (0,0);
 		for($i = 0; $i <= $length - 2; $i ++){
 			my @array2 = 0;
 			for($j = $i+1; $j <= $length -1; $j ++){
@@ -142,7 +124,9 @@ for($pg = 0; $pg <= $key_num -1; $pg ++){
 
 	$min_errs[$pg] = $min_err_pg;	
 	my $c1 = ($CPIs[$programs{$keys[$pg]}][$min_err_i] 
-			- $CPIs[$programs{$keys[$pg]}][$min_err_j])/($MPKIs[$programs{$keys[$pg]}][$min_err_i] - $MPKIs[$programs{$keys[$pg]}][$min_err_j] );
+				- $CPIs[$programs{$keys[$pg]}][$min_err_j])
+			/($MPKIs[$programs{$keys[$pg]}][$min_err_i] 
+				- $MPKIs[$programs{$keys[$pg]}][$min_err_j]);
 	$min_errs_c1[$pg] = $c1;
 }
 
