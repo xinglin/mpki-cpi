@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-ipc-sum3 - analyze the differences in cache partitionings, 
+# analyze-mpki-ipc-sum3 - analyze the differences in cache partitions 
 #                         when optimized for MPKI sum or IPC sum,
 #                         based on MPKIs and accurate CPIs 
 #                         for 3-benchmark workloads. 
@@ -154,9 +154,8 @@ for ($program1 = 0; $program1 <= $key_num - 3; $program1++){
 
 print "\n-------------------------------------------------------------\n\n";
 my $total = $same_result + $diff_result;
-printf "Total results: %d, diff result: $diff_result\n".
-		"percentage: %.02f%%\n\n", $total, 
-			($diff_result)*100/$total;
+printf "Total results: $total, diff result: $diff_result\n".
+		"percentage: %.02f%%\n\n", ($diff_result)*100/$total;
 
 print "Divergent details\n";
 my @absolute_speedup = (values %absolute_speedup_diverge);
@@ -166,13 +165,13 @@ print_avg("[all]Increase in relative speedup", \@relative_speedup, $total);
 print_avg("[divergent cases]Increase in relative speedup", \@relative_speedup);
 
 my @absolute_mpki = (values %absolute_mpki_diverge);
-print_avg("absolute mpki", \@absolute_mpki, $total);
+print_avg("\nabsolute mpki", \@absolute_mpki, $total);
 my @relative_mpki = (values %relative_mpki_diverge);
 print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
 print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 my @absolute_ipc = (values %absolute_ipc_diverge);
-print_avg("absolute ipc", \@absolute_ipc, $total);
+print_avg("\nabsolute ipc", \@absolute_ipc, $total);
 my @relative_ipc = (values %relative_ipc_diverge);
 print_avg("[all]Increase in relative ipc", \@relative_ipc, $total);
 print_avg("[divergent cases]Increase in relative ipc", \@relative_ipc);
