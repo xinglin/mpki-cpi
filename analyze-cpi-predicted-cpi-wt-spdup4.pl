@@ -1,20 +1,26 @@
 #!/usr/bin/perl -w
 #
 # analyze-cpi-predicted-cpi-wt-spdup4 - analyze the differences in cache 
-#                                       partitioning when optimized for 
+#                                       partitions when optimized for 
 #										weighted speedup, based on accurate 
 #										CPIs and optimal predicted CPIs for 
 #										4-benchmark workloads.
 # Purpose:
-#       To show the best speedup we can get based on *optimal predicted* CPIs,
-#       when compared with accurate CPIs based cache partitioning.
+#       To show the extent of sub-optimality of cache partitioning
+#		based on *optimal predicted* CPIs, when compared with accurate 
+#		CPIs based cache partitioning.
 #
 # Cache partitioning decision metrics: 
-#       maximum weighted speedup for cache partitioning based on optimal 
+#       maximum weighted speedup for cache partitions based on optimal 
 #       predicted CPIs and accurate CPIs.
 # 
 # Performance metrics:
-#       speedup in weighted speedup, MPKI sum and IPC sum                  
+#       speedup in weighted speedup, MPKI sum and IPC sum
+#		cache partitioning based on accurate CPIs is used as the baseline      
+#
+# NOTE: 
+#       Results from this series of scripts are not included in our WDDD 2011
+#       paper.   
 #
 use List::Util qw(sum max);
 use Common;
@@ -33,7 +39,7 @@ my @MPKIs = (
 #
 # CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
 #        Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
@@ -42,8 +48,11 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPIs for each program
+# predicted_CPIs - predicted CPIs for each program
 #
+# Four-dimensional array indexed by [program][way1][way2][way]
+# CPIs are predicted based on CPI samples of way1 and way2
+# 
 my @predicted_CPIs = ();
 
 #
@@ -119,10 +128,10 @@ read_all_predicted_cpis();
 print "\n\nbegin to calculate all possible combinations...\n";
 my @keys = (keys %programs);
 my $key_num = scalar(@keys);
-my ($pg1, $pg2, $pg3,$pg4) = (0,0,0);
+my ($pg1, $pg2, $pg3, $pg4) = (0,0,0);
 my $length = 0;
 my $output_str = 0;
-my ($i, $j, $k, $l, $m, $n,$o,$p) = (0,0,0,0,0,0,0,0);
+my ($i, $j, $k, $l, $m, $n, $o, $p) = (0,0,0,0,0,0,0,0);
 for ($pg1 = 0; $pg1 <= $key_num-4; $pg1++){
 	for($pg2 = $pg1+1; $pg2 <= $key_num - 3; $pg2++){
 	for($pg3 = $pg2+1; $pg3 <= $key_num -2 ; $pg3++){
@@ -132,9 +141,9 @@ LABEL:	for($pg4 = $pg3+1; $pg4 <= $key_num -1 ; $pg4++){
 		my $workload = "$keys[$pg1]+$keys[$pg2]+$keys[$pg3]+$keys[$pg4]";
 		my($best_ii, $best_jj, $best_kk, $speedup) = 
 						max_speedup4($CPIs[$programs{$keys[$pg1]}], 
-						$CPIs[$programs{$keys[$pg2]}], 
-						$CPIs[$programs{$keys[$pg3]}], 
-						$CPIs[$programs{$keys[$pg4]}]);
+										$CPIs[$programs{$keys[$pg2]}], 
+										$CPIs[$programs{$keys[$pg3]}], 
+										$CPIs[$programs{$keys[$pg4]}]);
 
 		# try all predictions for each program
 		my ($pred_ii, $pred_jj, $pred_kk, $pred_speedup)=(0,0,0,0);
@@ -145,11 +154,12 @@ LABEL:	for($pg4 = $pg3+1; $pg4 <= $key_num -1 ; $pg4++){
 			  for($l = $k+1; $l <= $length -1; $l ++){
 			    for($m = 0;    $m <= $length -2; $m ++){
 			      for($n = $m+1; $n <= $length -1; $n ++){
-			    for($o = 0;    $o <= $length -2; $o ++){
-			      for($p = $o+1; $p <= $length -1; $p ++){
+			    	for($o = 0;    $o <= $length -2; $o ++){
+			      	  for($p = $o+1; $p <= $length -1; $p ++){
 
 		# the $pred_speedup gotten here is based on predicted ipc. The value
-		# is meanless to me.
+		# is meanless to us. Instead, we should get the real-world weighted 
+		# speedup for this cache partitioning.
 		($pred_ii, $pred_jj, $pred_kk, $pred_speedup) = 
 			max_speedup4($predicted_CPIs[$programs{$keys[$pg1]}][$i][$j], 
 						$predicted_CPIs[$programs{$keys[$pg2]}][$k][$l],
@@ -168,7 +178,8 @@ LABEL:	for($pg4 = $pg3+1; $pg4 <= $key_num -1 ; $pg4++){
 			next LABEL;
 		}
 
-		# get the real-world speedup based on pred_i and accurate cpis
+		# get the real-world speedup based on pred_ii, pred_jj, pred_kk
+		# and accurate cpis
 		$pred_speedup = 
             ($CPIs[$programs{$keys[$pg1]}][$length-1]/
             $CPIs[$programs{$keys[$pg1]}][$pred_ii])
@@ -231,13 +242,15 @@ my @weighted_speedup = (values %best_pred_a_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("drop in relative speedup", \@weighted_speedup, $total);
+print_avg("[all]drop in relative speedup", \@weighted_speedup, $total);
+print_avg("[divergent cases]drop in relative speedup", \@weighted_speedup);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
 print_avg("absolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("drop in relative ipc", \@relative_ipc, $total);
+print_avg("[all]drop in relative ipc", \@relative_ipc, $total);
+print_avg("[divergent cases]drop in relative ipc", \@relative_ipc);
 
 print_top(\%best_pred_a_speedup, "absolute divergent speedup", 10);
 print_top(\%best_pred_r_speedup, "relative divergent speedup",10);
