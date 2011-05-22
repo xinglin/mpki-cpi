@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-predicted-cpi-fix-way - analyze the divergence in cache 
-#									   partitioning when optimized for MPKI or
-#									   weighted speedup, based on fixed-way 
-#									   pair based CPI predictions and MPKIs
-#									   for 2-benchmark workload.
+# analyze-mpki-predicted-cpi-fixed-way - analyze the divergence in cache 
+#									     partitions when optimized for MPKI or
+#									     weighted speedup, based on fixed-way 
+#									     pair based CPI predictions and MPKIs
+#									     for 2-benchmark workloads.
 # Purpose:
 #       To show how well fixed-way based CPI prediction does when compared with
 #       MPKI based cache partitioning.
@@ -43,7 +43,7 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPIs for each program
+# predicted_CPIs - predicted CPIs for each program
 # 
 my @predicted_CPIs = ();
 
@@ -89,7 +89,8 @@ sub read_all_predicted_cpis {
 	foreach $key (keys %programs){
 		my $length = scalar( @{$CPIs[$programs{$key}]} );
 		print "$key\n";
-		my @array1 = 0, $i=0,$j=0;
+		my @array1 = 0;
+		my ($i, $j) = (0,0);
 		for($i = 0; $i <= $length - 2; $i ++){
 			my @array2 = 0;
 			for($j = $i+1; $j <= $length -1; $j ++){
@@ -156,7 +157,7 @@ for ($pg1 = 0; $pg1 <= $key_num - 2; $pg1++){
             ($CPIs[$programs{$keys[$pg1]}][$length-1]/
             $CPIs[$programs{$keys[$pg1]}][$pred_ii])
           + ($CPIs[$programs{$keys[$pg2]}][$length-1]/
-            $CPIs[$programs{$keys[$pg2]}][$length-$pred_ii - 2]);
+            $CPIs[$programs{$keys[$pg2]}][$length-$pred_ii-2]);
 
 		my $workload = "$keys[$pg1]+$keys[$pg2]";
 		# record difference details
@@ -166,11 +167,11 @@ for ($pg1 = 0; $pg1 <= $key_num - 2; $pg1++){
 
 		my $mpki_predicted = 
 			$MPKIs[$programs{$keys[$pg1]}][$pred_ii]
-		  + $MPKIs[$programs{$keys[$pg2]}][$length-$pred_ii - 2];
+		  + $MPKIs[$programs{$keys[$pg2]}][$length-$pred_ii-2];
 
 		my $ipc_predicted = 
 			1/$CPIs[$programs{$keys[$pg1]}][$pred_ii]
-		  + 1/$CPIs[$programs{$keys[$pg2]}][$length-$pred_ii - 2];
+		  + 1/$CPIs[$programs{$keys[$pg2]}][$length-$pred_ii-2];
 		
 		$mpki_diff = $mpki_predicted - $mpki;
 		$best_pred_a_mpki_diverge{$workload} = $mpki_diff;
