@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 # analyze-mpki-predicted-cpi-wt-spdup - analyze the differences in cache 
-#							   		    partitioning when optimized for MPKI
+#							   		    partitions when optimized for MPKI
 #										and weighted speedup, based on MPKI and 
 #									    optimal predicted CPIs for 2-benchmark 
 #									    workloads.
@@ -35,7 +35,7 @@ my @MPKIs = (
 #
 # CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
 #		 Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
@@ -44,7 +44,7 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPIs for each program
+# predicted_CPIs - predicted CPIs for each program
 #
 my @predicted_CPIs = ();
 
@@ -153,7 +153,7 @@ for ($pg1 = 0; $pg1 < $key_num-1; $pg1++){
 
 		# the $pred_speedup gotten here is based on predicted ipc. The value
 		# is meanless to us. We want to get the real-world speedup of 
-		# cache partitioning based on predicted CPIs.
+		# this cache partitioning.
 		($pred_ii, $pred_speedup) = 
 			max_speedup($predicted_CPIs[$programs{$keys[$pg1]}][$i][$j], 
 					$predicted_CPIs[$programs{$keys[$pg2]}][$k][$l]);
@@ -214,19 +214,22 @@ my @weighted_speedup = (values %best_pred_a_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[all]Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[divergent cases]Increase in relative speedup", \@weighted_speedup);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
-print_avg("absolute mpki", \@absolute_mpki, $total);
+print_avg("\nabsolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %best_pred_r_mpki_diverge);
-print_avg("Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
 print_avg("absolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("Increase in relative ipc", \@relative_ipc, $total);
+print_avg("[all]Increase in relative ipc", \@relative_ipc, $total);
+print_avg("[divergent cases]Increase in relative ipc", \@relative_ipc);
 
 print_top(\%best_pred_r_speedup, "relative speedup",10,10,8,6,4,2);
 print_top(\%best_pred_r_mpki_diverge, "relative mpki", 10,50,40,30,20,10,5);
