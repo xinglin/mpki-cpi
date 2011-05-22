@@ -1,19 +1,25 @@
 #!/usr/bin/perl -w
 #
-# analyze-cpi-predicted-cpi4-fix-way - analyze the divergencs in cache 
-#                                      partitioning when optimized for weighted
-#									   speedup, based on global way pair
-#                                      based CPI predictions and accurate CPIs
-#                                      for 4-benchmark workload.
+# analyze-cpi-predicted-cpi4-fixed-way - analyze the divergencs in cache 
+# 										 partitions when optimized for weighted
+#										 speedup, based on fixed way CPI 
+#										 predictions and accurate CPIs
+#                                        for 4-benchmark workloads.
 # Purpose:
-#       To show how well fixed-way based CPI prediction does when compared with
+#       To show the extent of sub-optimality of cache partitioning based 
+#       on fixed-way CPI predictions, when compared with
 #       *accurate* CPIs based cache partitioning.
 #
 # Cache partitioning decision metrics: 
-#       maximum weighted speedup for CPIs based cache partitioning
+#       maximum weighted speedup for CPIs based cache partitions
 # 
 # Performance metrics:
 #       weighted speedup, MPKI sum and IPC sum                  
+#       cache partitioning based on accurate CPIs is used as the baseline
+#
+# NOTE: 
+#       Results from this series of scripts are not included in our WDDD 2011
+#       paper.   
 #
 use List::Util qw(sum max);
 use Common;
@@ -41,7 +47,10 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPIs for each program
+# predicted_CPIs - predicted CPIs for each program
+#
+# Four-dimensional array indexed by [program][way1][way2][way]
+# CPIs are predicted based on CPI samples of way1 and way2
 #
 my @predicted_CPIs = ();
 
@@ -116,24 +125,24 @@ read_all_predicted_cpis();
 %best_pred_r_speedup = ();
 
 # calculate all possible combinations
-print "\n\nbegin to calculate all possible combinations...\n";
+print "\n\nbegin to calculate all possible 4-benchmark combinations...\n";
 my @keys = (keys %programs);
 my $key_num = scalar(@keys);
 my ($pg1, $pg2, $pg3) = (0,0,0);
 my $length = 0;
 my ($same_result, $diff_result) = (0, 0);
 my $output_str = 0;
-for ($pg1 = 0; $pg1 <= $key_num-4; $pg1++){
+for ($pg1 = 0; $pg1 <= $key_num - 4; $pg1++){
 	for($pg2 = $pg1+1; $pg2 <= $key_num - 3; $pg2++){
-	for($pg3 = $pg2+1; $pg3 <= $key_num -2 ; $pg3++){
-	for($pg4 = $pg3+1; $pg4 <= $key_num -1 ; $pg4++){
+	for($pg3 = $pg2+1; $pg3 <= $key_num - 2; $pg3++){
+	for($pg4 = $pg3+1; $pg4 <= $key_num - 1; $pg4++){
 		
 		$length = scalar(@{ $CPIs[$programs{$keys[$pg1]}] });
 		my($best_ii, $best_jj, $best_kk, $speedup) = 
 						max_speedup4($CPIs[$programs{$keys[$pg1]}], 
-						$CPIs[$programs{$keys[$pg2]}], 
-						$CPIs[$programs{$keys[$pg3]}],
-						$CPIs[$programs{$keys[$pg4]}]);
+										$CPIs[$programs{$keys[$pg2]}], 
+										$CPIs[$programs{$keys[$pg3]}],
+										$CPIs[$programs{$keys[$pg4]}]);
 		my $mpki = $MPKIs[$programs{$keys[$pg1]}][$best_ii] + 
 					$MPKIs[$programs{$keys[$pg2]}][$best_jj] +
 					$MPKIs[$programs{$keys[$pg3]}][$best_kk] +
@@ -157,7 +166,8 @@ for ($pg1 = 0; $pg1 <= $key_num-4; $pg1++){
 			$diff_result ++;
 		}
 
-		# get the real-world speedup based on pred_i and accurate cpis
+		# get the real-world speedup based on pred_ii, pred_jj, pred_kk
+		# and accurate cpis
 		$pred_speedup = 
             ($CPIs[$programs{$keys[$pg1]}][$length-1]/
             $CPIs[$programs{$keys[$pg1]}][$pred_ii])
@@ -209,19 +219,22 @@ my @weighted_speedup = (values %best_pred_a_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("Drop in relative speedup", \@weighted_speedup, $total);
+print_avg("[all]Drop in relative speedup", \@weighted_speedup, $total);
+print_avg("[divergent cases]Drop in relative speedup", \@weighted_speedup);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
-print_avg("absolute mpki", \@absolute_mpki, $total);
+print_avg("\nabsolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %best_pred_r_mpki_diverge);
-print_avg("Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
-print_avg("absolute ipc", \@absolute_ipc, $total);
+print_avg("\nabsolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("Drop in relative ipc", \@relative_ipc, $total);
+print_avg("[all]Drop in relative ipc", \@relative_ipc, $total);
+print_avg("[divergent cases]Drop in relative ipc", \@relative_ipc);
 
 print_top(\%best_pred_a_speedup, "absolute speedup", 10);
 print_top(\%best_pred_r_speedup, "relative speedup",10);

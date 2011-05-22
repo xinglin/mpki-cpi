@@ -211,14 +211,14 @@ print_avg("[all]Drop in relative speedup", \@weighted_speedup, $total);
 print_avg("[divergent cases]Drop in relative speedup", \@weighted_speedup);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
-print_avg("absolute mpki", \@absolute_mpki, $total);
+print_avg("\nabsolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %best_pred_r_mpki_diverge);
 print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
 print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
-print_avg("absolute ipc", \@absolute_ipc, $total);
+print_avg("\nabsolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
 print_avg("[all]Increase in relative ipc", \@relative_ipc, $total);
