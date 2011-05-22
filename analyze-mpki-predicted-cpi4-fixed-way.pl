@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 #
-# analyze-mpki-predicted-cpi4-fix-way - analyze the divergencs in cache 
-#                                     	partitioning when optimized for MPKI
-#										or weighted speedup, based on fixed-way
-#										pair based CPI predictions and MPKI
-#                                       for 4-benchmark workload.
+# analyze-mpki-predicted-cpi4-fixed-way - analyze the divergencs in cache 
+#                                     	  partitions when optimized for MPKI
+#										  or weighted speedup, based on 
+#										  fixed-way pair based CPI predictions 
+#										  and MPKI for 4-benchmark workload.
 # Purpose:
 #       To show how well fixed-way based CPI prediction does when compared with
 #       MPKI based cache partitioning.
@@ -34,7 +34,7 @@ my @MPKIs = (
 #
 # CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
 #        Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
@@ -43,7 +43,7 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPIs for each program
+# predicted_CPIs - predicted CPIs for each program
 #
 my @predicted_CPIs = ();
 
