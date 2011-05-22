@@ -49,8 +49,10 @@ my @CPIs = (
 
 #
 # predicted_CPIs - predicted CPIs for each program
-# A four-dimentional array: [program][way1-to-pred][way2-to-pred][way]
 #
+# Four-dimensional array indexed by [program][way1][way2][way]
+# CPIs are predicted based on CPI samples of way1 and way2
+# 
 my @predicted_CPIs = ();
 
 #
