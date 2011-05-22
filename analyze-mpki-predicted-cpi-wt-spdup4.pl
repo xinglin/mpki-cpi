@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 # analyze-mpki-predicted-cpi-wt-spdup4 - analyze the differences in cache 
-#                                        partitioning when optimized for MPKI
+#                                        partitions when optimized for MPKI
 #										 or weighted speedup, based on MPKI and 
 #                                        optimal predicted CPIs for 4-benchmark 
 #                                        workloads.
@@ -12,11 +12,14 @@
 # Cache partitioning decision metrics: 
 #		minimum MPKI sum for MPKI based cache partitioning;
 #       maximum weighted speedup for cache partitioning based on optimal 
-#       predicted CPIs and accurate CPIs.
+#       predicted CPIs.
 # 
 # Performance metrics:
 #       speedup in weighted speedup, MPKI sum and IPC sum  
-#		cache partitioning optimized for MPKI is used as the baseline         
+#		cache partitioning optimized for MPKI is used as the baseline   
+# NOTE:
+#		This script takes a really long time to finish: one instance was
+#		launched on 4-21-2011 but it is still running today(5-22-2011).       
 #
 use List::Util qw(sum max);
 use Common;
@@ -35,7 +38,7 @@ my @MPKIs = (
 #
 # CPIs - CPIs for each program
 # 
-# FIXME: remember to add an array here whenever a new program are added. 
+# FIXME: remember to add an array here whenever a new program is added. 
 #		 Make sure this equation holds: $CPIs = $programs + 1.
 #
 my @CPIs = (
@@ -44,7 +47,7 @@ my @CPIs = (
 );
 
 #
-# CPIs - predicted CPIs for each program
+# predicted_CPIs - predicted CPIs for each program
 #
 my @predicted_CPIs = ();
 
@@ -126,19 +129,19 @@ my ($pg1, $pg2, $pg3,$pg4) = (0,0,0,0);
 my $length = 0;
 my $output_str = 0;
 my ($same_result, $diff_result) = (0, 0);
-my ($i, $j, $k, $l, $m, $n,$o,$p) = (0,0,0,0,0,0,0,0);
-for ($pg1 = 0; $pg1 <= $key_num-4; $pg1++){
+my ($i, $j, $k, $l, $m, $n, $o, $p) = (0,0,0,0,0,0,0,0);
+for ($pg1 = 0; $pg1 <= $key_num - 4; $pg1++){
 	for($pg2 = $pg1+1; $pg2 <= $key_num - 3; $pg2++){
-	for($pg3 = $pg2+1; $pg3 <= $key_num -2 ; $pg3++){
-	for($pg4 = $pg3+1; $pg4 <= $key_num -1 ; $pg4++){
+	for($pg3 = $pg2+1; $pg3 <= $key_num - 2; $pg3++){
+	for($pg4 = $pg3+1; $pg4 <= $key_num - 1; $pg4++){
 		
 		$length = scalar(@{ $CPIs[$programs{$keys[$pg1]}] });
 		my $workload = "$keys[$pg1]+$keys[$pg2]+$keys[$pg3]+$keys[$pg4]";
 		my($best_ii, $best_jj, $best_kk) = 
 						mpki_min4($MPKIs[$programs{$keys[$pg1]}], 
-						$MPKIs[$programs{$keys[$pg2]}], 
-						$MPKIs[$programs{$keys[$pg3]}], 
-						$MPKIs[$programs{$keys[$pg4]}]);
+									$MPKIs[$programs{$keys[$pg2]}], 
+									$MPKIs[$programs{$keys[$pg3]}], 
+									$MPKIs[$programs{$keys[$pg4]}]);
 		my($cpi_ii, $cpi_jj, $cpi_kk, $cpi_speedup) = 
 						max_speedup4($CPIs[$programs{$keys[$pg1]}],
 										$CPIs[$programs{$keys[$pg2]}],
@@ -154,8 +157,8 @@ for ($pg1 = 0; $pg1 <= $key_num-4; $pg1++){
 			  for($l = $k+1; $l <= $length -1; $l ++){
 			    for($m = 0;    $m <= $length -2; $m ++){
 			      for($n = $m+1; $n <= $length -1; $n ++){
-			    for($o = 0;    $o <= $length -2; $o ++){
-			      for($p = $o+1; $p <= $length -1; $p ++){
+			        for($o = 0;    $o <= $length -2; $o ++){
+			         for($p = $o+1; $p <= $length -1; $p ++){
 
 		($pred_ii, $pred_jj, $pred_kk, $pred_speedup) = 
 			max_speedup4($predicted_CPIs[$programs{$keys[$pg1]}][$i][$j], 
@@ -163,7 +166,8 @@ for ($pg1 = 0; $pg1 <= $key_num-4; $pg1++){
 						$predicted_CPIs[$programs{$keys[$pg3]}][$m][$n],
 						$predicted_CPIs[$programs{$keys[$pg4]}][$o][$p]);
 
-		# get real-world speedup based on pred_i and accurate cpis
+		# get real-world speedup based on pred_ii, pred_jj, pred_kk 
+		# and accurate cpis
 		$pred_speedup = 
             ($CPIs[$programs{$keys[$pg1]}][$length-1]/
             $CPIs[$programs{$keys[$pg1]}][$pred_ii])
@@ -173,10 +177,11 @@ for ($pg1 = 0; $pg1 <= $key_num-4; $pg1++){
             $CPIs[$programs{$keys[$pg3]}][$pred_kk])
           + ($CPIs[$programs{$keys[$pg4]}][$length-1]/
             $CPIs[$programs{$keys[$pg4]}][$length-$pred_ii 
-								-$pred_jj -$pred_kk - 3]);
+								-$pred_jj -$pred_kk - 4]);
 
-		# when we have found the best 
-        # cache partitioning, no need to try other way-predictions.
+		# when we have found the optimal cache partitioning, no need to 
+		# try other way-predictions. The main purpose of this check
+		# is to shorten the execution time of this script.
         if($pred_speedup == $cpi_speedup){
             $pred_best_ii = $pred_ii;
             $pred_best_jj = $pred_jj;
@@ -273,19 +278,22 @@ my @weighted_speedup = (values %best_pred_a_speedup);
 print_avg("absolute speedup", \@weighted_speedup, $total);
 
 @weighted_speedup = (values %best_pred_r_speedup);
-print_avg("Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[all]Increase in relative speedup", \@weighted_speedup, $total);
+print_avg("[divergent cases]Increase in relative speedup", \@weighted_speedup);
 
 my @absolute_ipc = (values %best_pred_a_ipc_diverge);
 print_avg("absolute ipc", \@absolute_ipc, $total);
 
 my @relative_ipc = (values %best_pred_r_ipc_diverge);
-print_avg("Increase in relative ipc", \@relative_ipc, $total);
+print_avg("[all]Increase in relative ipc", \@relative_ipc, $total);
+print_avg("[divergent cases]Increase in relative ipc", \@relative_ipc);
 
 my @absolute_mpki = (values %best_pred_a_mpki_diverge);
 print_avg("absolute mpki", \@absolute_mpki, $total);
 
 my @relative_mpki = (values %best_pred_r_mpki_diverge);
-print_avg("Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[all]Increase in relative mpki", \@relative_mpki, $total);
+print_avg("[divergent cases]Increase in relative mpki", \@relative_mpki);
 
 print_top(\%best_pred_r_speedup, "relative speedup",10,10,8,6,4,2);
 print_top(\%best_pred_r_ipc_diverge, "relative ipc",10,20,15,10,5);
